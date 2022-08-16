@@ -18,7 +18,6 @@ def index(request):
     return render(request, 'posts/index.html', context)
 
 
-@login_required
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     post_list = Post.objects.filter(group=group)
@@ -32,7 +31,7 @@ def group_posts(request, slug):
     return render(request, 'posts/group_list.html', context)
 
 
-@login_required
+
 def profile(request, username):
     user = User.objects.get(username=username)
     post_list = Post.objects.filter(author=user)
@@ -42,13 +41,13 @@ def profile(request, username):
     page_obj = paginator.get_page(page_number)
     context = {
         'post_count': post_count,
-        'user': user,
+        'author': user,
         'page_obj': page_obj,
     }
     return render(request, 'posts/profile.html', context)
 
 
-@login_required
+
 def post_detail(request, post_id):
     post = Post.objects.get(id=post_id)
 
