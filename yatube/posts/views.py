@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
@@ -31,7 +30,6 @@ def group_posts(request, slug):
     return render(request, 'posts/group_list.html', context)
 
 
-
 def profile(request, username):
     user = User.objects.get(username=username)
     post_list = Post.objects.filter(author=user)
@@ -45,7 +43,6 @@ def profile(request, username):
         'page_obj': page_obj,
     }
     return render(request, 'posts/profile.html', context)
-
 
 
 def post_detail(request, post_id):
@@ -94,4 +91,5 @@ def post_edit(request, pk):
             post.save()
             return redirect('posts:post_detail', post_id=pk)
 
-    return render(request, 'posts/create_post.html', {'form': form, 'is_edit': is_edit})
+    return render(request, 'posts/create_post.html',
+                  {'form': form, 'is_edit': is_edit})
