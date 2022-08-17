@@ -12,18 +12,13 @@ app_name = 'users'
 
 urlpatterns = [
     path('signup/', views.SignUp.as_view(
-        extra_context={"var": "Зарегистрироваться"}),
-         name='signup'),
+        extra_context={"var": "Зарегистрироваться"}), name='signup'),
     path('logout/', LogoutView.as_view(
-        template_name='users/logged_out.html'),
-         name='logout'
-         ),
+        template_name='users/logged_out.html'), name='logout'),
     path('login/',
          LoginView.as_view(
              extra_context={"var": "Войти", "eto_login": "eto_login"},
-             template_name='users/login.html'),
-         name='login'
-         ),
+             template_name='users/login.html'), name='login'),
     path('password_change/',
          PasswordChangeView.as_view(
              extra_context={"var": "Изменить пароль"},
