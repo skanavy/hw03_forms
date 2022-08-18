@@ -10,12 +10,14 @@ HELLO
                 <li class="list-group-item">
                     Дата публикации: {{ post.pub_date|date:"d E Y" }}
                 </li>
+                {% if not group and post.group %}
                 <li class="list-group-item">
                     Группа: {{ post.group }}
                     <a href="{% url 'posts:groups' post.group.slug %}">
                         все записи группы
                     </a>
                 </li>
+                {% endif %}
                 <li class="list-group-item">
                     Автор: {{ post.author.get_full_name }}
                 </li>
@@ -35,7 +37,9 @@ HELLO
                 {{ post }}
             </p>
             <p>
+                 {% if post.author == request.user %}
                 <a href="{% url 'posts:post_edit' post.id %}">Редактировать пост</a>
+                {% endif %}
             </p>
         </article>
     </div>
