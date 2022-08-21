@@ -25,7 +25,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    post_list = group.group.select_related('author', 'group')
+    post_list = group.group.select_related('author')
     context = {
         'group': group,
         'page_obj': paginate_queryset(post_list, request),
@@ -35,7 +35,7 @@ def group_posts(request, slug):
 
 def profile(request, username):
     user = User.objects.get(username=username)
-    post_list = user.posts.select_related('author')
+    post_list = user.posts.select_related('group')
     post_count = post_list.count()
     context = {
         'post_count': post_count,
@@ -47,7 +47,7 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    post_count = Post.objects.filter(author=post.author).count()
+    post_count = post.author.posts.count()
     context = {
         'post': post,
         'post_count': post_count,
@@ -73,7 +73,7 @@ def post_edit(request, pk):
     if request.user != post.author:
         return redirect('posts:post_detail', post_id=pk)
     if form.is_valid():
-        post = form.save(commit=False)
+        post = form.save()
         post.save()
         return redirect('posts:post_detail', post_id=pk)
     return render(request, 'posts/create_post.html',
