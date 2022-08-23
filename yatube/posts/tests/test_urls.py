@@ -1,43 +1,31 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
+from django.urls import reverse
 
-from posts.models import Post, Group
+from ..models import Post, Group
 
 User = get_user_model()
-
-
-class StaticURLTests(TestCase):
-    def setUp(self):
-        self.guest_client = Client()
-
-    def test_homepage(self):
-        response = self.guest_client.get('/')
-        self.assertEqual(response.status_code, 200)
 
 
 class TaskURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
-        # Создадим запись в БД для проверки доступности адреса task/test-slug/
-        Post.objects.create(
+        cls.author = User.objects.create_user(username='NoName')
+        cls.post = Post.objects.create(
             text='Тестовый текст',
-            author=User.objects.create_user(username='Stas')
+            author=cls.author,
         )
-        Group.objects.create(
-            title='группа1',
-            description='desc1',
-            slug='test-slug',
+        cls.group = Group.objects.create(
+            title='test_title',
+            description='test_description',
+            slug='test_slug'
         )
 
     def setUp(self):
-        # Создаем неавторизованный клиент
         self.guest_client = Client()
-        # Создаем авторизованый клиент
-        self.user = User.objects.create_user(username='StasBasov')
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
+        self.authorized_client.force_login(self.author)
 
     # Проверяем общедоступные страницы
     def test_home_url_exists_at_desired_location(self):
@@ -47,27 +35,31 @@ class TaskURLTests(TestCase):
 
     def test_slug_detail_url_exists_at_desired_location_authorized(self):
         """Страница /group/test-slug/ доступна любому пользователю."""
-        response = self.guest_client.get('/group/test-slug/')
+        response = self.guest_client.get(reverse('posts:groups', kwargs={'slug': self.group.slug}))
         self.assertEqual(response.status_code, 200)
 
-    def profile_user_added_url_exists_at_desired_location(self):
+    def test_profile_user_added_url_exists_at_desired_location(self):
         """Страница /profile/user доступна любому пользователю."""
-        response = self.guest_client.get('/profile/user')
+        response = self.guest_client.get('/profile/NoName/')
         self.assertEqual(response.status_code, 200)
 
-    def profile_detail_added_url_exists_at_desired_location(self):
-        """Страница /profile/user доступна любому пользователю."""
-        response = self.guest_client.get('/profile/1')
+    def test_post_detail_added_url_exists_at_desired_location(self):
+        """Страница /posts/id доступна любому пользователю."""
+        response = self.guest_client.get(reverse('posts:post_detail', kwargs={'post_id': self.post.id}))
         self.assertEqual(response.status_code, 200)
 
     # Проверяем доступность страниц для авторизованного пользователя
-    def profile_edit_url_exists_at_desired_location(self):
-        """Страница /profile/1/edit/ доступна авторизованному пользователю."""
-        response = self.authorized_client.get('/profile/1/edit')
+    def test_post_edit_url_exists_at_desired_location(self):
+        """Страница /posts/<post_id>/edit/ доступна авторизованному пользователю."""
+        response = self.authorized_client.get(reverse('posts:post_edit', kwargs={'pk': self.post.id}))
         self.assertEqual(response.status_code, 200)
 
     # Проверяем доступность страниц для авторизованного пользователя
-    def create_url_exists_at_desired_location(self):
+    def test_create_url_exists_at_desired_location(self):
         """Страница /create/ доступна авторизованному пользователю."""
-        response = self.authorized_client.get('/create')
+        response = self.authorized_client.get('/create/')
         self.assertEqual(response.status_code, 200)
+
+    def test_wrong_uri_returns_404(self):
+        response = self.client.get('/wrong/url/')
+        self.assertEqual(response.status_code, 404)
