@@ -63,3 +63,34 @@ class TaskURLTests(TestCase):
     def test_wrong_uri_returns_404(self):
         response = self.client.get('/wrong/url/')
         self.assertEqual(response.status_code, 404)
+
+    def test_post_edit_url_redirect_anonymous_on_admin_login(self):
+        """Страница /post/<post_id>/edit/ перенаправит анонимного пользователя
+        на страницу логина.
+        """
+        response = self.guest_client.get(reverse('posts:post_edit', kwargs={'pk': self.post.id}))
+        self.assertRedirects(
+            response, f'/auth/login/?next=/posts/{self.post.id}/edit/')
+
+    def test_create_url_redirect_anonymous_on_admin_login(self):
+        """Страница /create/ перенаправит анонимного пользователя
+        на страницу логина.
+        """
+        response = self.guest_client.get('/create/', follow=True)
+        self.assertRedirects(
+            response, f'/auth/login/?next=/create/')
+
+    # Проверка вызываемых шаблонов для каждого адреса
+    def test_urls_uses_correct_template(self):
+        """URL-адрес использует соответствующий шаблон."""
+        templates_url_names = {
+            'posts/index.html': '/',
+            'posts/profile.html': f'/profile/{self.author}/',
+            'posts/group_list.html': f'/group/{self.group.slug}/',
+            'posts/post_detail.html': f'/posts/{self.post.id}/',
+            'posts/create_post.html': f'/create/',
+        }
+        for template, url in templates_url_names.items():
+            with self.subTest(url=url):
+                response = self.authorized_client.get(url)
+                self.assertTemplateUsed(response, template)
