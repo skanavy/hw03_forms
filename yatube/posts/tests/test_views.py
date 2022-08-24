@@ -12,7 +12,7 @@ class TaskURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.author = User.objects.create_user(username='NoName')
+        cls.author = User.objects.create_user(username='StasBasov')
 
         cls.group = Group.objects.create(
             title='test_title',
@@ -97,7 +97,41 @@ class TaskURLTests(TestCase):
         # совпадает с ожидаемым
         first_object = response.context['page_obj'][0]
 
-        task_text_0 = first_object.text
+        post_id_0 = first_object.id
+        post_text_0 = first_object.text
+        post_author_0 = first_object.author
+        post_group_0 = first_object.group
 
-        self.assertEqual(task_text_0, 'Тестовый текст')
+        self.assertEqual(post_id_0, self.post.pk)
+        self.assertEqual(post_text_0, self.post.text)
+        self.assertEqual(post_author_0, self.author)
+        self.assertEqual(post_group_0, self.group)
+
+
+class PaginatorViewsTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.author = User.objects.create_user(username='StasBasov')
+        cls.group = Group.objects.create(
+            title='test_title',
+            description='test_description',
+            slug='test-slug'
+        )
+
+    def setUp(self):
+        for post in range(13):
+            Post.objects.create(
+                text=f'text{post}', author=self.author, group=self.group
+            )
+
+    def test_first_page_contains_ten_records(self):
+        response = self.client.get(reverse('posts:index'))
+        # Проверка: количество постов на первой странице равно 10.
+        self.assertEqual(len(response.context['page_obj']), 10)
+
+    def test_second_page_contains_three_records(self):
+        # Проверка: на второй странице должно быть три поста.
+        response = self.client.get(reverse('posts:index') + '?page=2')
+        self.assertEqual(len(response.context['page_obj']), 3)
 
