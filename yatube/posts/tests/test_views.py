@@ -21,7 +21,7 @@ class TaskURLTests(TestCase):
         )
 
         cls.post = Post.objects.create(
-            text='Тестовый текст',
+            text='test_post',
             author=cls.author,
             group=cls.group,
         )
@@ -73,7 +73,7 @@ class TaskURLTests(TestCase):
     def test_post_edit_page_show_correct_context(self):
         """Шаблон post_edit сформирован с правильным контекстом."""
         response = self.authorized_client.get(
-            reverse('posts:post_edit', kwargs={'post_id': self.post.pk}))
+            reverse('posts:post_edit', kwargs={'pk': self.post.pk}))
         self.assert_post_response(response)
 
     def test_post_detail_show_correct_context(self):
@@ -81,7 +81,7 @@ class TaskURLTests(TestCase):
         response = self.authorized_client.get(
             reverse('posts:post_detail', kwargs={'post_id': self.post.id})
             )
-        self.assertEqual(response.context['post'].text, 'Тестовый текст')
+        self.assertEqual(response.context['post'].text, 'test_post')
         self.assertEqual(response.context['post'].group, self.group)
 
     def test_index_show_correct_context(self):
